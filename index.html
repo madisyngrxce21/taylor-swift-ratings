@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rate Every Taylor Swift Song</title>
+<meta name="description" content="Rate every Taylor Swift song 1 to 10 and compare with friends.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F1F7; --panel:rgba(255,255,255,.78); --solid:#fff; --ink:#1F1A2E; --muted:#6D6680; --line:rgba(31,26,46,.09);
+  --chip:#EEE9F3; --chip-ink:#3B3450; --focus:#6B4EFF; --glow1:#F4C9DC; --glow2:#CFE3F4; --glow3:#F6DDBE;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#120F18; --panel:rgba(32,27,43,.8); --solid:#201B2B; --ink:#F3EFF9; --muted:#A7A0B8; --line:rgba(255,255,255,.08);
+    --chip:#2B2538; --chip-ink:#DAD4E7; --focus:#B3A2FF; --glow1:#4A2340; --glow2:#1D3148; --glow3:#44301C;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#120F18; --panel:rgba(32,27,43,.8); --solid:#201B2B; --ink:#F3EFF9; --muted:#A7A0B8; --line:rgba(255,255,255,.08);
+  --chip:#2B2538; --chip-ink:#DAD4E7; --focus:#B3A2FF; --glow1:#4A2340; --glow2:#1D3148; --glow3:#44301C;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;min-height:100%;color:var(--ink);
+  background:
+    radial-gradient(60vmax 50vmax at 0% 0%,var(--glow1),transparent 60%),
+    radial-gradient(55vmax 45vmax at 100% 20%,var(--glow2),transparent 60%),
+    radial-gradient(60vmax 50vmax at 50% 100%,var(--glow3),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 70px}
+.serif{font-family:"Instrument Serif",Georgia,"Times New Roman",serif;font-weight:400}
+
+/* Hero mosaic */
+.mosaic{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:22px}
+.mosaic div{aspect-ratio:1;border-radius:10px;overflow:hidden;box-shadow:0 6px 16px -8px rgba(40,20,60,.45);
+  animation:pop .5s cubic-bezier(.2,.9,.3,1.3) both}
+.mosaic svg,.cover svg,.banner svg,.mini svg{display:block;width:100%;height:100%}
+@keyframes pop{from{opacity:0;transform:scale(.6) rotate(-6deg)}}
+h1{font-size:clamp(2.5rem,11vw,3.6rem);line-height:.95;margin:0 0 10px;letter-spacing:-.01em}
+h1 i{font-style:italic}
+.lede{color:var(--muted);margin:0 0 20px;max-width:44ch}
+
+.card{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:20px}
+.progress{padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:16px}
+.ring{width:66px;height:66px;flex:none;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:.9rem;font-weight:800}
+.pmeta{flex:1;min-width:0}
+.pmeta .big{font-size:1.5rem;font-weight:800;line-height:1.1}
+.pmeta .sub{color:var(--muted);font-size:.88rem}
+
+.tabs{display:flex;gap:6px;padding:5px;margin-bottom:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:5}
+.tabs button{flex:1;border:0;background:transparent;color:var(--chip-ink);font:inherit;font-weight:600;
+  padding:10px 6px;border-radius:14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.search{display:block;width:100%;font:inherit;color:var(--ink);padding:12px 16px;margin-bottom:10px;border-radius:14px;outline:none;-webkit-appearance:none;appearance:none}
+.search::placeholder{color:var(--muted)}
+.search:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.noresults{color:var(--muted);text-align:center;padding:18px 0}
+.album.hide{display:none}
+.share{padding:16px 18px;margin-bottom:16px}
+.share b{font-size:1.45rem;display:block;margin-bottom:4px}
+.share p{color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.share label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+.share .search{background:var(--solid);border:1px solid var(--line)}
+.share button{width:100%;border:0;border-radius:14px;padding:12px;font:inherit;font-weight:700;background:var(--ink);color:var(--bg);cursor:pointer}
+.share .note{margin:10px 0 0;word-break:break-all}
+.share .note:empty{display:none}
+.people{margin:0 2px 14px}
+.plabel{display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px}
+.pbtns{display:flex;flex-wrap:wrap;gap:6px}
+.pbtns button{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer}
+.pbtns button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sright{display:flex;align-items:center;gap:6px;flex:none}
+.others{display:flex;gap:4px}
+.ob{font-size:.72rem;font-weight:600;background:var(--chip);color:var(--chip-ink);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.ob b{font-weight:800}
+#albums.readonly .scale button{cursor:default}
+.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem;margin:0 4px 14px}
+.toggle input{width:18px;height:18px;accent-color:var(--focus)}
+
+/* Albums */
+details.album{margin-bottom:12px;overflow:hidden}
+details.album>summary{list-style:none;cursor:pointer;padding:12px;display:flex;align-items:center;gap:14px}
+details.album>summary::-webkit-details-marker{display:none}
+.cover{width:72px;height:72px;border-radius:12px;overflow:hidden;flex:none;box-shadow:0 8px 18px -10px var(--era)}
+.atitle{flex:1;min-width:0}
+.atitle b{display:block;font-size:1.35rem;line-height:1.05}
+.atitle small{color:var(--muted);font-size:.82rem;display:block;margin-top:3px}
+.mbar{height:4px;border-radius:2px;background:var(--chip);margin-top:7px;overflow:hidden}
+.mbar i{display:block;height:100%;width:0;background:var(--era);transition:width .35s}
+.avg{min-width:50px;text-align:center;font-weight:800;font-size:1.25rem;line-height:1}
+.avg em{display:block;font-style:normal;font-weight:400;font-size:.66rem;color:var(--muted);margin-top:3px}
+.banner{position:relative;height:120px;margin:0 12px;border-radius:14px;overflow:hidden}
+.banner .over{position:absolute;inset:auto 0 0 0;padding:14px 16px;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.55));display:flex;justify-content:space-between;align-items:flex-end}
+.banner .over span{font-size:.85rem;opacity:.9}
+.banner .over b{font-size:2rem;line-height:1}
+.songs{list-style:none;margin:0;padding:4px 14px 12px}
+.song{padding:13px 0;border-top:1px solid var(--line)}
+.song:first-child{border-top:0}
+.song.hide{display:none}
+.stitle{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px;font-weight:600}
+.stitle .n{color:var(--muted);font-weight:400;font-size:.85rem;flex:none}
+.tag{font-size:.7rem;font-weight:600;color:var(--era-ink);background:var(--era);border-radius:999px;padding:2px 8px;margin-left:6px;white-space:nowrap;vertical-align:1px}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.scale button{border:0;border-radius:999px;background:var(--chip);color:var(--chip-ink);font:inherit;font-weight:600;
+  height:34px;padding:0;cursor:pointer;font-size:.9rem;transition:background .15s,transform .15s,color .15s}
+.scale button.fill{background:color-mix(in srgb,var(--era) 30%,var(--chip))}
+.scale button.on{background:var(--era);color:var(--era-ink);transform:scale(1.12);box-shadow:0 4px 12px -4px var(--era)}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.done-all{color:var(--muted);font-size:.9rem;padding:12px 0 4px;text-align:center}
+
+/* Rankings */
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.pod{padding:12px;text-align:center}
+.pod .mini{width:56px;height:56px;border-radius:12px;overflow:hidden;margin:0 auto 8px}
+.pod .medal{font-size:.8rem;color:var(--muted)}
+.pod b{display:block;font-size:.95rem;line-height:1.2;margin:2px 0;overflow-wrap:anywhere}
+.pod .sc{font-size:1.4rem;font-weight:800}
+.panel{padding:6px 16px;margin-bottom:14px}
+.panel h2{font-size:1.6rem;margin:14px 0 4px}
+.rank{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.rank:first-of-type{border-top:0}
+.pos{width:26px;color:var(--muted);font-weight:600;text-align:right;flex:none}
+.rank .mini{width:36px;height:36px;border-radius:8px;overflow:hidden;flex:none}
+.rname{flex:1;min-width:0}
+.rname b{display:block;font-weight:600;overflow-wrap:anywhere}
+.rname small{color:var(--muted)}
+.score{font-weight:800;font-size:1.15rem;flex:none}
+.empty{color:var(--muted);padding:14px 0}
+.reset{display:block;margin:28px auto 0;background:none;border:1px solid var(--line);color:var(--muted);
+  font:inherit;padding:8px 14px;border-radius:12px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mosaic" id="mosaic" aria-hidden="true"></div>
+  <h1 class="serif">Every Taylor song, <i>rated by you</i></h1>
+  <p class="lede">All twelve eras plus bonus tracks, holiday songs, soundtracks and features. Tap a number to rate a song 1–10, and tap it again to clear.</p>
+
+  <div class="card progress">
+    <div class="ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--chip)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15.5" fill="none" stroke="url(#rg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" pathLength="100"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#E07AA6"/><stop offset="1" stop-color="#7A4CA8"/></linearGradient></defs></svg><b id="pct">0%</b></div>
+    <div class="pmeta"><div class="big"><span id="count">0</span> of <span id="total">0</span> songs</div><div class="sub" id="who" hidden></div><div class="sub" id="overall">Nothing rated yet</div><div class="sub" id="sync">Your ratings save in this browser.</div></div>
+  </div>
+
+  <div class="people" id="people" hidden><span class="plabel">Showing ratings for</span><div class="pbtns" id="pbtns"></div></div>
+
+  <div class="card share">
+    <b class="serif">Swap ratings with a friend</b>
+    <p>Send your link to a friend. When they open it, your ratings show up next to theirs. Send a new link whenever you've rated more.</p>
+    <label for="myname">Your name</label>
+    <input id="myname" class="search" placeholder="e.g. Madi" autocomplete="off" maxlength="30">
+    <button type="button" id="shareBtn">Share my ratings</button>
+    <p class="note" id="shareNote" role="status"></p>
+  </div>
+
+  <div class="tabs card" role="tablist">
+    <button role="tab" aria-selected="true" data-view="rate">Rate songs</button>
+    <button role="tab" aria-selected="false" data-view="rank">My rankings</button>
+  </div>
+
+  <section id="view-rate">
+    <input type="search" id="q" class="search card" placeholder="Search for a song or album" aria-label="Search songs" autocomplete="off">
+    <label class="toggle"><input type="checkbox" id="unratedOnly"> Show only songs I haven't rated</label>
+    <div id="albums"></div>
+    <p class="noresults" id="noresults" hidden>No songs match that search. Check the spelling or try part of the title.</p>
+  </section>
+  <section id="view-rank" hidden>
+    <div class="podium" id="podium"></div>
+    <div class="card panel"><h2 class="serif">Albums, by your average</h2><div id="albumRank"></div></div>
+    <div class="card panel"><h2 class="serif">Songs, best to worst</h2><div id="songRank"></div></div>
+  </section>
+
+  <button class="reset" id="reset">Clear all ratings</button>
+</div>
+
+<script>
+const ALBUMS = [
+ {k:"debut",t:"Taylor Swift",y:2006,c:"#3E9C8F",ink:"#fff",songs:["Tim McGraw","Picture to Burn","Teardrops on My Guitar","A Place in This World","Cold as You","The Outside","Tied Together with a Smile","Stay Beautiful","Should've Said No","Mary's Song (Oh My My My)","Our Song",["I'm Only Me When I'm with You","Deluxe"],["Invisible","Deluxe"],["A Perfectly Good Heart","Deluxe"]]},
+ {k:"holiday",t:"The Taylor Swift Holiday Collection",y:2007,c:"#8E2B34",ink:"#fff",songs:["Last Christmas","Christmases When You Were Mine","Santa Baby","Silent Night","Christmas Must Be Something More","White Christmas"]},
+ {k:"fearless",t:"Fearless (Taylor's Version)",y:2008,tv:2021,c:"#C9A04A",ink:"#1F1A2E",songs:["Fearless","Fifteen","Love Story","Hey Stephen","White Horse","You Belong with Me","Breathe (feat. Colbie Caillat)","Tell Me Why","You're Not Sorry","The Way I Loved You","Forever & Always","The Best Day","Change","Jump Then Fall","Untouchable","Come In with the Rain","Superstar","The Other Side of the Door","Today Was a Fairytale",["You All Over Me (feat. Maren Morris)","Vault"],["Mr. Perfectly Fine","Vault"],["We Were Happy","Vault"],["That's When (feat. Keith Urban)","Vault"],["Don't You","Vault"],["Bye Bye Baby","Vault"]]},
+ {k:"beautifuleyes",t:"Beautiful Eyes (EP)",y:2008,c:"#3F7FA8",ink:"#fff",songs:["Beautiful Eyes","I Heart ?"]},
+ {k:"speaknow",t:"Speak Now (Taylor's Version)",y:2010,tv:2023,c:"#7A4CA8",ink:"#fff",songs:["Mine","Sparks Fly","Back to December","Speak Now","Dear John","Mean","The Story of Us","Never Grow Up","Enchanted","Better than Revenge","Innocent","Haunted","Last Kiss","Long Live","Ours","Superman",["Electric Touch (feat. Fall Out Boy)","Vault"],["When Emma Falls in Love","Vault"],["I Can See You","Vault"],["Castles Crumbling (feat. Hayley Williams)","Vault"],["Foolish One","Vault"],["Timeless","Vault"],["If This Was a Movie","Deluxe"]]},
+ {k:"red",t:"Red (Taylor's Version)",y:2012,tv:2021,c:"#A6232E",ink:"#fff",songs:["State of Grace","Red","Treacherous","I Knew You Were Trouble","All Too Well","22","I Almost Do","We Are Never Ever Getting Back Together","Stay Stay Stay","The Last Time (feat. Gary Lightbody)","Holy Ground","Sad Beautiful Tragic","The Lucky One","Everything Has Changed (feat. Ed Sheeran)","Starlight","Begin Again","The Moment I Knew","Come Back... Be Here","Girl at Home","Ronan",["Better Man","Vault"],["Nothing New (feat. Phoebe Bridgers)","Vault"],["Babe","Vault"],["Message in a Bottle","Vault"],["I Bet You Think About Me (feat. Chris Stapleton)","Vault"],["Forever Winter","Vault"],["Run (feat. Ed Sheeran)","Vault"],["The Very First Night","Vault"],["All Too Well (10 Minute Version)","Vault"]]},
+ {k:"1989",t:"1989 (Taylor's Version)",y:2014,tv:2023,c:"#5DA9D6",ink:"#10202E",songs:["Welcome to New York","Blank Space","Style","Out of the Woods","All You Had to Do Was Stay","Shake It Off","I Wish You Would","Bad Blood","Wildest Dreams","How You Get the Girl","This Love","I Know Places","Clean","Wonderland","You Are in Love","New Romantics",["\"Slut!\"","Vault"],["Say Don't Go","Vault"],["Now That We Don't Talk","Vault"],["Suburban Legends","Vault"],["Is It Over Now?","Vault"]]},
+ {k:"rep",t:"reputation",y:2017,c:"#3A3A3F",ink:"#fff",songs:["...Ready for It?","End Game (feat. Ed Sheeran & Future)","I Did Something Bad","Don't Blame Me","Delicate","Look What You Made Me Do","So It Goes...","Gorgeous","Getaway Car","King of My Heart","Dancing with Our Hands Tied","Dress","This Is Why We Can't Have Nice Things","Call It What You Want","New Year's Day"]},
+ {k:"lover",t:"Lover",y:2019,c:"#E07AA6",ink:"#2A0F1D",songs:["I Forgot That You Existed","Cruel Summer","Lover","The Man","The Archer","I Think He Knows","Miss Americana & The Heartbreak Prince","Paper Rings","Cornelia Street","Death by a Thousand Cuts","London Boy","Soon You'll Get Better (feat. The Chicks)","False God","You Need to Calm Down","Afterglow","ME! (feat. Brendon Urie)","It's Nice to Have a Friend","Daylight",["All of the Girls You Loved Before","Bonus"]]},
+ {k:"folklore",t:"folklore",y:2020,c:"#8C8C86",ink:"#fff",songs:["the 1","cardigan","the last great american dynasty","exile (feat. Bon Iver)","my tears ricochet","mirrorball","seven","august","this is me trying","illicit affairs","invisible string","mad woman","epiphany","betty","peace","hoax",["the lakes","Bonus"]]},
+ {k:"longpond",t:"folklore: the long pond studio sessions",y:2020,c:"#4F6B5B",ink:"#fff",songs:[["the 1","Live"],["cardigan","Live"],["the last great american dynasty","Live"],["exile (feat. Justin Vernon)","Live"],["my tears ricochet","Live"],["mirrorball","Live"],["seven","Live"],["august","Live"],["this is me trying","Live"],["illicit affairs","Live"],["invisible string","Live"],["mad woman","Live"],["epiphany","Live"],["betty","Live"],["peace","Live"],["hoax","Live"],["the lakes","Live"]]},
+ {k:"evermore",t:"evermore",y:2020,c:"#B0652E",ink:"#fff",songs:["willow","champagne problems","gold rush","'tis the damn season","tolerate it","no body, no crime (feat. HAIM)","happiness","dorothea","coney island (feat. The National)","ivy","cowboy like me","long story short","marjorie","closure","evermore (feat. Bon Iver)",["right where you left me","Bonus"],["it's time to go","Bonus"]]},
+ {k:"midnights",t:"Midnights",y:2022,c:"#2E3A6E",ink:"#fff",songs:["Lavender Haze","Maroon","Anti-Hero","Snow on the Beach (feat. Lana Del Rey)","You're on Your Own, Kid","Midnight Rain","Question...?","Vigilante Shit","Bejeweled","Labyrinth","Karma","Sweet Nothing","Mastermind",["The Great War","3am"],["Bigger Than the Whole Sky","3am"],["Paris","3am"],["High Infidelity","3am"],["Glitch","3am"],["Would've, Could've, Should've","3am"],["Dear Reader","3am"],["Hits Different","Til Dawn"],["You're Losing Me","Til Dawn"]]},
+ {k:"ttpd",t:"The Tortured Poets Department",y:2024,c:"#8B8378",ink:"#fff",songs:["Fortnight (feat. Post Malone)","The Tortured Poets Department","My Boy Only Breaks His Favorite Toys","Down Bad","So Long, London","But Daddy I Love Him","Fresh Out the Slammer","Florida!!! (feat. Florence + the Machine)","Guilty as Sin?","Who's Afraid of Little Old Me?","I Can Fix Him (No Really I Can)","loml","I Can Do It with a Broken Heart","The Smallest Man Who Ever Lived","The Alchemy","Clara Bow",["The Black Dog","Anthology"],["imgonnagetyouback","Anthology"],["The Albatross","Anthology"],["Chloe or Sam or Sophia or Marcus","Anthology"],["How Did It End?","Anthology"],["So High School","Anthology"],["I Hate It Here","Anthology"],["thanK you aIMee","Anthology"],["I Look in People's Windows","Anthology"],["The Prophecy","Anthology"],["Cassandra","Anthology"],["Peter","Anthology"],["The Bolter","Anthology"],["Robin","Anthology"],["The Manuscript","Anthology"]]},
+ {k:"showgirl",t:"The Life of a Showgirl",y:2025,c:"#E8792B",ink:"#1F1A2E",songs:["The Fate of Ophelia","Elizabeth Taylor","Opalite","Father Figure","Eldest Daughter","Ruin the Friendship","Actually Romantic","Wi$h Li$t","Wood","CANCELLED!","Honey","The Life of a Showgirl (feat. Sabrina Carpenter)",["Patient Zero","Encore"],["Cleveland!","Encore"],["Pink Clouding","Encore"],["Babylon","Encore"]]},
+ {k:"extras",t:"Soundtracks & singles",y:null,c:"#5E8C5A",ink:"#fff",songs:["Crazier","Safe & Sound (feat. The Civil Wars)","Eyes Open","Sweeter than Fiction","I Don't Wanna Live Forever (with ZAYN)","Beautiful Ghosts","Christmas Tree Farm","Only the Young","Carolina","I Knew It, I Knew You"]},
+ {k:"features",t:"Features & collaborations",y:null,c:"#6A5ACD",ink:"#fff",songs:["Two Is Better Than One (Boys Like Girls)","Half of My Hometown (Kelsea Ballerini)","Babe (Sugarland)","Highway Don't Care (Tim McGraw & Keith Urban)","Both of Us (B.o.B)","Gasoline (HAIM remix)","Renegade (Big Red Machine)","Birch (Big Red Machine)","The Alcott (The National)","The Joker and the Queen (Ed Sheeran)","Us. (Gracie Abrams)"]}
+];
+// second tone + original pattern per album
+const TONE={debut:["#BFE6D9","dots"],fearless:["#F4DE9E","rays"],speaknow:["#D6B8F0","arcs"],red:["#F1A3A1","stripes"],"1989":["#D8EEFA","checks"],rep:["#8C8C94","zigzag"],lover:["#FBD3E4","waves"],folklore:["#D9D9D3","hatch"],evermore:["#F2C79B","diamonds"],midnights:["#9FB0E8","rings"],ttpd:["#EFE8DC","columns"],showgirl:["#FFD0A6","chevrons"],extras:["#C9E3BE","confetti"],longpond:["#C8D6C3","waves"],holiday:["#F3E3C3","dots"],beautifuleyes:["#CFE6F2","diamonds"],features:["#D9D2FF","chevrons"]};
+ALBUMS.forEach(a=>{a.c2=TONE[a.k][0];a.p=TONE[a.k][1];});
+
+function art(a){
+  const c=a.c,d=a.c2; let g="";
+  switch(a.p){
+    case "dots": for(let y=10;y<100;y+=20)for(let x=(y/20%2?20:10);x<100;x+=20) g+=`<circle cx="${x}" cy="${y}" r="5" fill="${d}"/>`; break;
+    case "rays": for(let i=0;i<12;i++){const t=i*Math.PI/6,t2=t+Math.PI/12;g+=`<path d="M50 50L${50+90*Math.cos(t)} ${50+90*Math.sin(t)}L${50+90*Math.cos(t2)} ${50+90*Math.sin(t2)}Z" fill="${d}" opacity=".55"/>`;} g+=`<circle cx="50" cy="50" r="14" fill="${d}"/>`; break;
+    case "arcs": for(let r=90;r>0;r-=15) g+=`<circle cx="0" cy="100" r="${r}" fill="${(r/15)%2?d:c}"/>`; break;
+    case "stripes": for(let i=-100;i<200;i+=18) g+=`<path d="M${i} 0l100 100h-8L${i-8} 0z" fill="${d}"/>`; break;
+    case "checks": for(let y=0;y<100;y+=20)for(let x=0;x<100;x+=20) if((x+y)/20%2) g+=`<rect x="${x}" y="${y}" width="20" height="20" fill="${d}" opacity=".8"/>`; break;
+    case "zigzag": for(let y=10;y<110;y+=22){let p=`M0 ${y}`;for(let x=0;x<=100;x+=12.5)p+=`L${x} ${y+((x/12.5)%2?-9:0)}`;g+=`<path d="${p}" fill="none" stroke="${d}" stroke-width="4"/>`;} break;
+    case "waves": for(let y=8;y<110;y+=16){g+=`<path d="M-10 ${y}q15 -12 30 0t30 0t30 0t30 0" fill="none" stroke="${d}" stroke-width="5" stroke-linecap="round"/>`;} break;
+    case "hatch": for(let i=6;i<100;i+=11){g+=`<path d="M0 ${i}H100M${i} 0V100" stroke="${d}" stroke-width="1.6" opacity=".7"/>`;} break;
+    case "diamonds": for(let y=0;y<=100;y+=25)for(let x=(y/25%2?12.5:0);x<=100;x+=25) g+=`<path d="M${x} ${y-10}l9 10l-9 10l-9 -10z" fill="${d}"/>`; break;
+    case "rings": for(let r=46;r>4;r-=9) g+=`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${d}" stroke-width="2.5" opacity="${.35+r/100}"/>`; [[18,20],[82,24],[78,84],[14,78],[50,50]].forEach(([x,y])=>g+=`<circle cx="${x}" cy="${y}" r="2.4" fill="#fff"/>`); break;
+    case "columns": for(let x=6;x<100;x+=14) g+=`<rect x="${x}" y="0" width="5" height="100" fill="${d}" opacity=".85"/>`; g+=`<rect x="0" y="44" width="100" height="12" fill="${c}"/>`; break;
+    case "chevrons": for(let y=-10;y<110;y+=18) g+=`<path d="M0 ${y}l50 14l50 -14" fill="none" stroke="${d}" stroke-width="6"/>`; break;
+    case "confetti": {let s=7;const r=()=>{s=(s*9301+49297)%233280;return s/233280};for(let i=0;i<26;i++){g+=`<rect x="${r()*96}" y="${r()*96}" width="${4+r()*6}" height="3.5" rx="1.5" fill="${[d,'#fff','#F4C95D'][i%3]}" transform="rotate(${r()*180} ${r()*100} ${r()*100})"/>`;}} break;
+  }
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="${c}"/>${g}</svg>`;
+}
+
+const SONGS = [];
+ALBUMS.forEach(a=>{ a.art=art(a); a.list = a.songs.map((s,i)=>{ const [name,tag]=Array.isArray(s)?s:[s,null]; const song={id:a.k+":"+i,name,tag,album:a,n:i+1}; SONGS.push(song); return song; }); });
+
+const KEY="ts-ratings-v1";
+const others={}; let viewing=null, names={}, myId=null;
+function R(){ return viewing?(others[viewing]||{}):state.ratings; }
+function firstName(u){ return ((names[u]||"").split(" ")[0])||"Friend"; }
+let state={ratings:{},updatedAt:0};
+try{ const raw=localStorage.getItem(KEY); if(raw) state=JSON.parse(raw)||state; }catch(e){}
+if(!state.ratings) state.ratings={};
+function saveLocal(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+
+const albumsEl=document.getElementById("albums");
+document.getElementById("mosaic").innerHTML=ALBUMS.filter(a=>!["holiday","beautifuleyes","longpond","extras","features"].includes(a.k)).map((a,i)=>`<div style="animation-delay:${i*45}ms">${a.art}</div>`).join("");
+document.getElementById("total").textContent=SONGS.length;
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function buildAlbums(){
+  albumsEl.innerHTML=ALBUMS.map(a=>`
+  <details class="album card" style="--era:${a.c};--era-ink:${a.ink}" data-album="${a.k}">
+    <summary>
+      <div class="cover" aria-hidden="true">${a.art}</div>
+      <div class="atitle"><b class="serif">${esc(a.t)}</b><small>${a.y?a.y+(a.tv?" (re-recorded "+a.tv+")":"")+" · ":""}<span data-prog="${a.k}"></span></small><div class="mbar"><i data-mbar="${a.k}"></i></div></div>
+      <div class="avg" data-avg="${a.k}">–<em>avg</em></div>
+    </summary>
+    <div class="banner" aria-hidden="true">${a.art}<div class="over"><span data-bprog="${a.k}"></span><b class="serif" data-bavg="${a.k}"></b></div></div>
+    <ul class="songs">
+      ${a.list.map(s=>`
+      <li class="song" data-song="${s.id}">
+        <div class="stitle"><span>${esc(s.name)}${s.tag?`<span class="tag">${s.tag}</span>`:""}</span><span class="sright"><span class="others" data-oth="${s.id}"></span><span class="n">${s.n}</span></span></div>
+        <div class="scale" role="group" aria-label="Rate ${esc(s.name)}">
+          ${[1,2,3,4,5,6,7,8,9,10].map(v=>`<button type="button" data-id="${s.id}" data-v="${v}" aria-pressed="false" aria-label="${v} out of 10">${v}</button>`).join("")}
+        </div>
+      </li>`).join("")}
+      <li class="done-all" data-done="${a.k}" hidden>Every song on this album is rated.</li>
+    </ul>
+  </details>`).join("");
+}
+function avgOf(list){ const r=list.map(s=>R()[s.id]).filter(Boolean); return r.length?{avg:r.reduce((x,y)=>x+y,0)/r.length,n:r.length}:null; }
+function paintSong(id){
+  const v=R()[id]||0;
+  const li=albumsEl.querySelector(`[data-song="${CSS.escape(id)}"]`); if(!li) return;
+  li.querySelectorAll(".scale button").forEach(b=>{ const bv=+b.dataset.v;
+    b.classList.toggle("on",bv===v); b.classList.toggle("fill",v>0&&bv<v); b.setAttribute("aria-pressed",bv===v?"true":"false"); b.disabled=!!viewing; });
+  const oth=li.querySelector(".others"); const bits=[];
+  if(viewing&&state.ratings[id]) bits.push(["You",state.ratings[id]]);
+  Object.keys(others).forEach(u=>{ if(u!==viewing&&others[u][id]) bits.push([firstName(u),others[u][id]]); });
+  oth.innerHTML=bits.map(([n,r])=>`<span class="ob">${esc(n)} <b>${r}</b></span>`).join("");
+}
+function paintAlbum(a){
+  const got=avgOf(a.list), done=a.list.filter(s=>R()[s.id]).length, q=s=>albumsEl.querySelector(s);
+  q(`[data-prog="${a.k}"]`).textContent=`${done}/${a.list.length} rated`;
+  q(`[data-mbar="${a.k}"]`).style.width=(done/a.list.length*100)+"%";
+  q(`[data-avg="${a.k}"]`).innerHTML=(got?got.avg.toFixed(1):"–")+"<em>avg</em>";
+  q(`[data-bprog="${a.k}"]`).textContent=`${a.list.length} songs${a.y?" · "+a.y:""}`;
+  q(`[data-bavg="${a.k}"]`).textContent=got?got.avg.toFixed(1)+" / 10":"";
+}
+function paintSummary(){
+  const done=SONGS.filter(s=>R()[s.id]).length, pct=Math.round(done/SONGS.length*100);
+  const who=document.getElementById("who"); who.hidden=!viewing; who.textContent=viewing?`${names[viewing]||"Your friend"}'s ratings`:"";
+  document.getElementById("count").textContent=done;
+  document.getElementById("pct").textContent=pct+"%";
+  document.getElementById("ringArc").setAttribute("stroke-dasharray",`${done/SONGS.length*100} 100`);
+  const all=avgOf(SONGS); document.getElementById("overall").textContent=all?`Your overall average is ${all.avg.toFixed(1)}`:"Nothing rated yet";
+}
+function norm(s){ return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9$ ]/g,""); }
+function applyFilter(){
+  const only=document.getElementById("unratedOnly").checked;
+  const q=norm(document.getElementById("q").value.trim());
+  let any=false;
+  ALBUMS.forEach(a=>{ let visible=0; const albumHit=q&&norm(a.t).includes(q);
+    a.list.forEach(s=>{ const match=!q||albumHit||norm(s.name).includes(q); const hide=!match||(only&&!!R()[s.id]);
+      albumsEl.querySelector(`[data-song="${CSS.escape(s.id)}"]`).classList.toggle("hide",hide); if(!hide) visible++; });
+    const el=albumsEl.querySelector(`[data-album="${a.k}"]`);
+    el.classList.toggle("hide",!!q&&visible===0);
+    if(q&&visible>0){ el.open=true; any=true; } else if(!q) any=true;
+    albumsEl.querySelector(`[data-done="${a.k}"]`).hidden=!(only&&!q&&visible===0); });
+  document.getElementById("noresults").hidden=any;
+}
+function paintAll(){ SONGS.forEach(s=>paintSong(s.id)); ALBUMS.forEach(paintAlbum); paintSummary(); applyFilter(); }
+
+albumsEl.addEventListener("click",e=>{
+  const b=e.target.closest(".scale button"); if(!b) return;
+  const id=b.dataset.id, v=+b.dataset.v;
+  if(viewing) return;
+  if(state.ratings[id]===v) delete state.ratings[id]; else state.ratings[id]=v;
+  state.updatedAt=Date.now(); saveLocal();
+  paintSong(id); paintAlbum(SONGS.find(s=>s.id===id).album); paintSummary(); queueRemote();
+});
+document.getElementById("unratedOnly").addEventListener("change",applyFilter);
+document.getElementById("q").addEventListener("input",applyFilter);
+
+function buildRank(){
+  const songs=SONGS.filter(s=>R()[s.id]).sort((x,y)=>R()[y.id]-R()[x.id]||x.name.localeCompare(y.name));
+  const medals=["1st","2nd","3rd"];
+  document.getElementById("podium").innerHTML=songs.slice(0,3).map((s,i)=>`
+    <div class="pod card"><div class="mini">${s.album.art}</div><div class="medal">${medals[i]}</div><b>${esc(s.name)}</b><div class="sc">${R()[s.id]}</div></div>`).join("");
+  const albums=ALBUMS.map(a=>({a,got:avgOf(a.list)})).filter(x=>x.got).sort((x,y)=>y.got.avg-x.got.avg);
+  document.getElementById("albumRank").innerHTML=albums.length?albums.map((x,i)=>`
+    <div class="rank"><span class="pos">${i+1}</span><span class="mini">${x.a.art}</span>
+    <div class="rname"><b>${esc(x.a.t)}</b><small>${x.got.n} of ${x.a.list.length} songs rated</small></div>
+    <span class="score">${x.got.avg.toFixed(1)}</span></div>`).join(""):`<p class="empty">Rate a few songs and your album order shows up here.</p>`;
+  document.getElementById("songRank").innerHTML=songs.length?songs.map((s,i)=>`
+    <div class="rank"><span class="pos">${i+1}</span><span class="mini">${s.album.art}</span>
+    <div class="rname"><b>${esc(s.name)}</b><small>${esc(s.album.t)}</small></div>
+    <span class="score">${R()[s.id]}</span></div>`).join(""):`<p class="empty">No ratings yet. Head to Rate songs and start with any album.</p>`;
+}
+document.querySelectorAll(".tabs button").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
+  const rank=t.dataset.view==="rank";
+  document.getElementById("view-rate").hidden=rank; document.getElementById("view-rank").hidden=!rank;
+  if(rank) buildRank();
+}));
+document.getElementById("reset").addEventListener("click",()=>{
+  if(!confirm("Clear every rating? This can't be undone.")) return;
+  state={ratings:{},updatedAt:Date.now()}; saveLocal(); paintAll(); buildRank(); queueRemote();
+});
+buildAlbums(); paintAll();
+
+// ---------- Link-based sharing (works on any static host) ----------
+function queueRemote(){ /* nothing to sync; share links carry ratings */ }
+const FKEY="ts-friends-v1", NKEY="ts-myname-v1", DIG="0123456789a";
+function loadFriends(){ try{ return JSON.parse(localStorage.getItem(FKEY))||{}; }catch(e){ return {}; } }
+function saveFriends(f){ try{ localStorage.setItem(FKEY,JSON.stringify(f)); }catch(e){} }
+function encode(r){ let s=SONGS.map(x=>DIG[r[x.id]||0]).join("").replace(/0+$/,""); return s; }
+function decode(s){ const r={}; for(let i=0;i<s.length&&i<SONGS.length;i++){ const v=DIG.indexOf(s[i]); if(v>0) r[SONGS[i].id]=v; } return r; }
+function loadOthers(){
+  Object.keys(others).forEach(k=>delete others[k]); names={};
+  const f=loadFriends(); Object.keys(f).forEach(k=>{ others[k]=f[k].ratings||{}; names[k]=f[k].name; });
+}
+function renderPeople(){
+  const ids=Object.keys(others).filter(u=>Object.keys(others[u]).length);
+  if(viewing&&!ids.includes(viewing)) viewing=null;
+  document.getElementById("people").hidden=!ids.length;
+  document.getElementById("albums").classList.toggle("readonly",!!viewing);
+  document.getElementById("pbtns").innerHTML=[`<button type="button" data-p="" aria-pressed="${!viewing}">You</button>`]
+    .concat(ids.map(u=>`<button type="button" data-p="${esc(u)}" aria-pressed="${viewing===u}">${esc(names[u]||"Friend")}</button>`)).join("");
+}
+document.getElementById("pbtns").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  viewing=b.dataset.p||null; renderPeople(); paintAll();
+  if(!document.getElementById("view-rank").hidden) buildRank();
+});
+const nameEl=document.getElementById("myname"), noteEl=document.getElementById("shareNote");
+try{ nameEl.value=localStorage.getItem(NKEY)||""; }catch(e){}
+nameEl.addEventListener("input",()=>{ try{ localStorage.setItem(NKEY,nameEl.value.trim()); }catch(e){} });
+document.getElementById("shareBtn").addEventListener("click",async()=>{
+  const name=nameEl.value.trim();
+  if(!name){ noteEl.textContent="Add your name first so your friend knows whose ratings these are."; nameEl.focus(); return; }
+  if(!Object.keys(state.ratings).length){ noteEl.textContent="Rate at least one song, then share."; return; }
+  const url=location.origin+location.pathname+"#n="+encodeURIComponent(name)+"&r="+encode(state.ratings);
+  try{ if(navigator.share){ await navigator.share({title:"My Taylor Swift ratings",url}); noteEl.textContent="Shared."; return; } }catch(e){ if(e&&e.name==="AbortError") return; }
+  try{ await navigator.clipboard.writeText(url); noteEl.textContent="Link copied. Paste it in a text to your friend."; }
+  catch(e){ noteEl.textContent="Copy this link and send it: "+url; }
+});
+function importFromHash(){
+  const p=new URLSearchParams(location.hash.slice(1)); const n=(p.get("n")||"").trim().slice(0,30), r=p.get("r");
+  if(!n||r==null||!/^[0-9a]*$/.test(r)) return;
+  history.replaceState(null,"",location.pathname+location.search);
+  let mine=""; try{ mine=(localStorage.getItem(NKEY)||"").trim().toLowerCase(); }catch(e){}
+  if(mine&&mine===n.toLowerCase()){ syncEl.textContent="That's your own share link, so nothing changed."; return; }
+  const f=loadFriends(); const key="f:"+n.toLowerCase(); f[key]={name:n,ratings:decode(r),updatedAt:Date.now()}; saveFriends(f);
+  syncEl.textContent=`Added ${n}'s latest ratings.`;
+}
+const syncEl=document.getElementById("sync");
+importFromHash(); loadOthers(); renderPeople(); paintAll();
+window.addEventListener("hashchange",()=>{ importFromHash(); loadOthers(); renderPeople(); paintAll(); });
+</script>
+</body>
+</html>

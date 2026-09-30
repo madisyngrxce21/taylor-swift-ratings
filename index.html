@@ -283,7 +283,7 @@ details.album>summary:hover .cover{animation:wiggle .5s ease-in-out}
 <script>
 const ALBUMS = [
  {k:"debut",t:"Taylor Swift",y:2006,c:"#3E9C8F",ink:"#fff",songs:["Tim McGraw","Picture to Burn","Teardrops on My Guitar","A Place in This World","Cold as You","The Outside","Tied Together with a Smile","Stay Beautiful","Should've Said No","Mary's Song (Oh My My My)","Our Song",["I'm Only Me When I'm with You","Deluxe"],["Invisible","Deluxe"],["A Perfectly Good Heart","Deluxe"]]},
- {k:"holiday",t:"The Taylor Swift Holiday Collection",y:2007,c:"#8E2B34",ink:"#fff",songs:["Last Christmas","Christmases When You Were Mine","Santa Baby","Silent Night","Christmas Must Be Something More","White Christmas"]},
+ {k:"holiday",hidden:true,t:"The Taylor Swift Holiday Collection",y:2007,c:"#8E2B34",ink:"#fff",songs:["Last Christmas","Christmases When You Were Mine","Santa Baby","Silent Night","Christmas Must Be Something More","White Christmas"]},
  {k:"fearless",t:"Fearless (Taylor's Version)",y:2008,tv:2021,c:"#C9A04A",ink:"#1F1A2E",songs:["Fearless","Fifteen","Love Story","Hey Stephen","White Horse","You Belong with Me","Breathe (feat. Colbie Caillat)","Tell Me Why","You're Not Sorry","The Way I Loved You","Forever & Always","The Best Day","Change","Jump Then Fall","Untouchable","Come In with the Rain","Superstar","The Other Side of the Door","Today Was a Fairytale",["You All Over Me (feat. Maren Morris)","From the Vault"],["Mr. Perfectly Fine","From the Vault"],["We Were Happy","From the Vault"],["That's When (feat. Keith Urban)","From the Vault"],["Don't You","From the Vault"],["Bye Bye Baby","From the Vault"]]},
  {k:"beautifuleyes",t:"Beautiful Eyes (EP)",y:2008,c:"#3F7FA8",ink:"#fff",songs:["Beautiful Eyes","I Heart ?"]},
  {k:"speaknow",t:"Speak Now (Taylor's Version)",y:2010,tv:2023,c:"#7A4CA8",ink:"#fff",songs:["Mine","Sparks Fly","Back to December","Speak Now","Dear John","Mean","The Story of Us","Never Grow Up","Enchanted","Better than Revenge","Innocent","Haunted","Last Kiss","Long Live","Ours","Superman",["Electric Touch (feat. Fall Out Boy)","From the Vault"],["When Emma Falls in Love","From the Vault"],["I Can See You","From the Vault"],["Castles Crumbling (feat. Hayley Williams)","From the Vault"],["Foolish One","From the Vault"],["Timeless","From the Vault"],["If This Was a Movie","Deluxe"]]},
@@ -314,8 +314,10 @@ function art(a){
   return `<img class="realcover" src="covers/${a.k}.png" data-k="${a.k}" alt="" loading="lazy" onerror="coverFallback(this)"><svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a.c2}"/><stop offset=".55" stop-color="${a.c}"/><stop offset="1" stop-color="#1E1526"/></linearGradient></defs><rect width="100" height="100" fill="url(#${id})"/>${dots}<ellipse cx="30" cy="18" rx="30" ry="12" fill="#fff" opacity=".16" transform="rotate(-20 30 18)"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="${font}, sans-serif" font-size="${size}"${italic} fill="#fff" style="paint-order:stroke" stroke="rgba(30,15,40,.25)" stroke-width="2">${lab}</text>${gl?`<text x="82" y="84" text-anchor="middle" dominant-baseline="central" font-family="Baloo 2, sans-serif" font-size="14" fill="#fff" opacity=".85">${gl}</text>`:""}</svg>`;
 }
 
-const SONGS = [];
-ALBUMS.forEach(a=>{ a.art=art(a); a.list = a.songs.map((s,i)=>{ const [name,tag]=Array.isArray(s)?s:[s,null]; const song={id:a.k+":"+i,name,tag,album:a,n:i+1}; SONGS.push(song); return song; }); });
+// CODE keeps hidden albums' songs so share links keep their positions
+const SONGS = [], CODE = [];
+ALBUMS.forEach(a=>{ a.art=art(a); a.list = a.songs.map((s,i)=>{ const [name,tag]=Array.isArray(s)?s:[s,null]; const song={id:a.k+":"+i,name,tag,album:a,n:i+1}; CODE.push(song); if(!a.hidden) SONGS.push(song); return song; }); });
+for(let i=ALBUMS.length;i--;) if(ALBUMS[i].hidden) ALBUMS.splice(i,1);
 
 const KEY="ts-ratings-v1";
 const others={}; let viewing=null, names={}, myId=null;
@@ -438,8 +440,8 @@ function queueRemote(){ /* nothing to sync; share links carry ratings */ }
 const FKEY="ts-friends-v1", NKEY="ts-myname-v1", DIG="0123456789a";
 function loadFriends(){ try{ return JSON.parse(localStorage.getItem(FKEY))||{}; }catch(e){ return {}; } }
 function saveFriends(f){ try{ localStorage.setItem(FKEY,JSON.stringify(f)); }catch(e){} }
-function encode(r){ let s=SONGS.map(x=>DIG[r[x.id]||0]).join("").replace(/0+$/,""); return s; }
-function decode(s){ const r={}; for(let i=0;i<s.length&&i<SONGS.length;i++){ const v=DIG.indexOf(s[i]); if(v>0) r[SONGS[i].id]=v; } return r; }
+function encode(r){ let s=CODE.map(x=>DIG[x.album.hidden?0:r[x.id]||0]).join("").replace(/0+$/,""); return s; }
+function decode(s){ const r={}; for(let i=0;i<s.length&&i<CODE.length;i++){ const v=DIG.indexOf(s[i]); if(v>0&&!CODE[i].album.hidden) r[CODE[i].id]=v; } return r; }
 function loadOthers(){
   Object.keys(others).forEach(k=>delete others[k]); names={};
   const f=loadFriends(); Object.keys(f).forEach(k=>{ others[k]=f[k].ratings||{}; names[k]=f[k].name; });

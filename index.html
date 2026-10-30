@@ -231,6 +231,26 @@ details.album>summary:hover .cover{animation:wiggle .5s ease-in-out}
 @keyframes floatup{0%{opacity:0;transform:translate(0,0) scale(.6)}10%{opacity:.55}50%{transform:translate(var(--sw),-55vh) scale(1)}90%{opacity:.4}100%{opacity:0;transform:translate(0,-110vh) scale(.8)}}
 .shoot{position:absolute;width:90px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#fff);opacity:0;rotate:-24deg;animation:shoot 9s ease-in var(--dl) infinite}
 @keyframes shoot{0%,88%{opacity:0;translate:0 0}90%{opacity:1}100%{opacity:0;translate:-60vw 26vw}}
+.rvrow{display:flex;margin-top:9px}
+.rvbtn{border:0;background:transparent;color:var(--muted);font:inherit;font-size:.8rem;font-weight:600;padding:3px 10px;margin-left:-10px;border-radius:999px;cursor:pointer}
+.rvbtn:hover{color:var(--ink);background:var(--chip)}
+.rvbtn.has{color:#FFC2DA}
+.rvbtn[aria-expanded="true"]{color:var(--hot-ink);background:var(--hot)}
+.review{margin-top:10px;padding:14px;border-radius:16px;background:var(--chip);display:grid;gap:12px;animation:fadein .25s ease-out both}
+.review[hidden]{display:none}
+.review label{min-width:0;display:grid;gap:5px;font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.review input,.review textarea{width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;text-transform:none;letter-spacing:0;font-weight:400;resize:vertical}
+.review input::placeholder,.review textarea::placeholder{color:var(--muted);opacity:.75}
+.review input:focus-visible,.review textarea:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.bf{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bf span{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-right:4px}
+.bf button{border:0;background:var(--panel);color:var(--ink);font:inherit;font-weight:700;padding:5px 16px;border-radius:999px;cursor:pointer}
+.bf button[aria-pressed="true"][data-bf="bop"]{background:var(--hot);color:var(--hot-ink)}
+.bf button[aria-pressed="true"][data-bf="flop"]{background:#8C7A99;color:#1E1526}
+.rvcopy{justify-self:start;border:0;background:var(--hot);color:var(--hot-ink);font:inherit;font-weight:800;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;padding:8px 16px;border-radius:999px;cursor:pointer}
+.rvnote{font-size:.8rem;color:var(--muted)}
+.rvnote:empty{display:none}
+.rq{display:block;font-style:italic;color:#FFC2DA!important;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -240,7 +260,7 @@ details.album>summary:hover .cover{animation:wiggle .5s ease-in-out}
  <aside class="side">
   <div class="mosaic" id="mosaic" aria-hidden="true"></div>
   <h1 class="serif">Every Taylor song, <i>rated by you</i> <span class="heart" aria-hidden="true">♥</span></h1>
-  <p class="lede">All twelve eras plus bonus tracks, holiday songs, soundtracks and features. Tap a number to rate a song 1–10, and tap it again to clear.</p>
+  <p class="lede">All twelve eras plus bonus tracks, holiday songs, soundtracks and features. Tap a number to rate a song 1–10, and tap it again to clear. Tap <b>Write a review</b> to save your favorite line, your thoughts, and bop or flop.</p>
 
   <div class="card progress">
     <div class="ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--chip)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15.5" fill="none" stroke="url(#rg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" pathLength="100"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#B98CE8"/><stop offset="1" stop-color="#FF6FA8"/></linearGradient></defs></svg><b id="pct">0%</b></div>
@@ -263,7 +283,7 @@ details.album>summary:hover .cover{animation:wiggle .5s ease-in-out}
     <button role="tab" aria-selected="false" data-view="rank">My rankings</button>
   </div>
 
-  <button class="reset" id="reset">Clear all ratings</button>
+  <button class="reset" id="reset">Clear all ratings and reviews</button>
  </aside>
  <main class="main">
   <section id="view-rate">
@@ -326,6 +346,7 @@ function firstName(u){ return ((names[u]||"").split(" ")[0])||"Friend"; }
 let state={ratings:{},updatedAt:0};
 try{ const raw=localStorage.getItem(KEY); if(raw) state=JSON.parse(raw)||state; }catch(e){}
 if(!state.ratings) state.ratings={};
+if(!state.reviews) state.reviews={};
 function saveLocal(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
 
 const albumsEl=document.getElementById("albums");
@@ -349,6 +370,8 @@ function buildAlbums(){
         <div class="scale" role="group" aria-label="Rate ${esc(s.name)}">
           ${[1,2,3,4,5,6,7,8,9,10].map(v=>`<button type="button" data-id="${s.id}" data-v="${v}" aria-pressed="false" aria-label="${v} out of 10">${v}</button>`).join("")}
         </div>
+        <div class="rvrow"><button type="button" class="rvbtn" data-rv="${s.id}" aria-expanded="false">✎ Write a review</button></div>
+        <div class="review" data-rvp="${s.id}" hidden></div>
       </li>`).join("")}
       <li class="done-all" data-done="${a.k}" hidden>Every song on this album is rated.</li>
     </ul>
@@ -364,7 +387,63 @@ function paintSong(id){
   if(viewing&&state.ratings[id]) bits.push(["You",state.ratings[id]]);
   Object.keys(others).forEach(u=>{ if(u!==viewing&&others[u][id]) bits.push([firstName(u),others[u][id]]); });
   oth.innerHTML=bits.map(([n,r])=>`<span class="ob">${esc(n)} <b>${r}</b></span>`).join("");
+  paintReviewBtn(li,id);
 }
+// ---------- Reviews (favorite line, thoughts, bop or flop) ----------
+function rvOf(id){ return state.reviews[id]||{}; }
+function hasReview(r){ return !!(r.line||r.thoughts||r.bf); }
+function paintReviewBtn(li,id){
+  const b=li.querySelector(".rvbtn"), r=rvOf(id), has=hasReview(r);
+  li.querySelector(".rvrow").hidden=!!viewing;
+  if(viewing) closeReview(li);
+  b.classList.toggle("has",has);
+  b.textContent=has?"✎ Your review"+(r.bf?" · "+(r.bf==="bop"?"Bop":"Flop"):""):"✎ Write a review";
+}
+function closeReview(li){ const p=li.querySelector(".review"); p.hidden=true; p.innerHTML=""; li.querySelector(".rvbtn").setAttribute("aria-expanded","false"); }
+function openReview(li,id){
+  const p=li.querySelector(".review"), r=rvOf(id), name=SONGS.find(s=>s.id===id).name;
+  p.innerHTML=`
+    <label>Favorite line<input data-f="line" maxlength="300" placeholder="The lyric that gets you" autocomplete="off"></label>
+    <label>Overall thoughts<textarea data-f="thoughts" rows="3" maxlength="2000" placeholder="What works, what doesn't, how it makes you feel"></textarea></label>
+    <div class="bf" role="group" aria-label="Bop or flop"><span>Bop or flop</span><button type="button" data-bf="bop" aria-pressed="${r.bf==="bop"}">Bop</button><button type="button" data-bf="flop" aria-pressed="${r.bf==="flop"}">Flop</button></div>
+    <button type="button" class="rvcopy">Copy review</button><p class="rvnote" role="status"></p>`;
+  p.querySelector('[data-f="line"]').value=r.line||"";
+  p.querySelector('[data-f="thoughts"]').value=r.thoughts||"";
+  p.querySelector('[data-f="line"]').setAttribute("aria-label","Favorite line from "+name);
+  p.hidden=false; li.querySelector(".rvbtn").setAttribute("aria-expanded","true");
+}
+function setReview(li,id,field,val){
+  const r={...rvOf(id),[field]:val};
+  if(!r[field]) delete r[field];
+  if(hasReview(r)) state.reviews[id]=r; else delete state.reviews[id];
+  state.updatedAt=Date.now(); saveLocal(); paintReviewBtn(li,id);
+}
+function reviewText(id){
+  const s=SONGS.find(x=>x.id===id), r=rvOf(id), v=state.ratings[id];
+  return [`${s.name} (${s.album.t})`,
+    `Rating: ${v?v+"/10":"not rated yet"}`,
+    r.line?`Favorite Line: ${r.line}`:"",
+    r.thoughts?`Overall Thoughts: ${r.thoughts}`:"",
+    r.bf?`Bop or Flop: ${r.bf==="bop"?"Bop":"Flop"}`:""].filter(Boolean).join("\n");
+}
+albumsEl.addEventListener("click",async e=>{
+  const li=e.target.closest(".song"); if(!li||viewing) return;
+  const id=li.dataset.song;
+  if(e.target.closest(".rvbtn")){ if(li.querySelector(".review").hidden){ openReview(li,id); li.querySelector('[data-f="line"]').focus(); } else closeReview(li); return; }
+  const bf=e.target.closest(".bf button");
+  if(bf){ const val=rvOf(id).bf===bf.dataset.bf?"":bf.dataset.bf; setReview(li,id,"bf",val);
+    li.querySelectorAll(".bf button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.bf===val?"true":"false")); return; }
+  if(e.target.closest(".rvcopy")){
+    const note=li.querySelector(".rvnote"), text=reviewText(id);
+    try{ if(navigator.share){ await navigator.share({text}); note.textContent="Shared."; return; } }catch(err){ if(err&&err.name==="AbortError") return; }
+    try{ await navigator.clipboard.writeText(text); note.textContent="Copied. Paste it in a text."; }
+    catch(err){ note.textContent="Couldn't copy automatically. Select the text above and copy it."; }
+  }
+});
+albumsEl.addEventListener("input",e=>{
+  const f=e.target.closest(".review [data-f]"); if(!f||viewing) return;
+  const li=f.closest(".song"); setReview(li,li.dataset.song,f.dataset.f,f.value.trim()?f.value:"");
+});
 function paintAlbum(a){
   const got=avgOf(a.list), done=a.list.filter(s=>R()[s.id]).length, q=s=>albumsEl.querySelector(s);
   q(`[data-prog="${a.k}"]`).textContent=`${done}/${a.list.length} rated`;
@@ -420,7 +499,7 @@ function buildRank(){
     <span class="score">${x.got.avg.toFixed(1)}</span></div>`).join(""):`<p class="empty">Rate a few songs and your album order shows up here.</p>`;
   document.getElementById("songRank").innerHTML=songs.length?songs.map((s,i)=>`
     <div class="rank"><span class="pos">${i+1}</span><span class="mini">${s.album.art}</span>
-    <div class="rname"><b>${esc(s.name)}</b><small>${esc(s.album.t)}</small></div>
+    <div class="rname"><b>${esc(s.name)}</b><small>${esc(s.album.t)}</small>${!viewing&&rvOf(s.id).line?`<small class="rq">“${esc(rvOf(s.id).line)}”</small>`:""}</div>
     <span class="score">${R()[s.id]}</span></div>`).join(""):`<p class="empty">No ratings yet. Head to Rate songs and start with any album.</p>`;
 }
 document.querySelectorAll(".tabs button").forEach(t=>t.addEventListener("click",()=>{
@@ -430,8 +509,8 @@ document.querySelectorAll(".tabs button").forEach(t=>t.addEventListener("click",
   if(rank) buildRank();
 }));
 document.getElementById("reset").addEventListener("click",()=>{
-  if(!confirm("Clear every rating? This can't be undone.")) return;
-  state={ratings:{},updatedAt:Date.now()}; saveLocal(); paintAll(); buildRank(); queueRemote();
+  if(!confirm("Clear every rating and review? This can't be undone.")) return;
+  state={ratings:{},reviews:{},updatedAt:Date.now()}; saveLocal(); paintAll(); buildRank(); queueRemote();
 });
 buildAlbums(); paintAll();
 

@@ -239,7 +239,7 @@ details.album>summary:hover .cover{animation:wiggle .5s ease-in-out}
 .review{margin-top:10px;padding:14px;border-radius:16px;background:var(--chip);display:grid;gap:12px;animation:fadein .25s ease-out both}
 .review[hidden]{display:none}
 .review label{min-width:0;display:grid;gap:5px;font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.review input,.review textarea{width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;text-transform:none;letter-spacing:0;font-weight:400;resize:vertical}
+.review input,.review textarea{box-sizing:border-box;width:100%;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;text-transform:none;letter-spacing:0;font-weight:400;resize:vertical}
 .review input::placeholder,.review textarea::placeholder{color:var(--muted);opacity:.75}
 .review input:focus-visible,.review textarea:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .bf{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
